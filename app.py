@@ -48,7 +48,9 @@ cart = st.session_state.cart if "cart" in st.session_state else {
 # Number of buttons to display per row
 buttons_per_row = 5
 button_columns = st.columns(buttons_per_row)
-
+#def callback():#buttonw as clicked
+ #   st.session_state.button_clicked=True
+    #cart
 # Loop through the product IDs to create buttons
 for product_id in product_data['Product ID']:
     if button_columns[product_id % buttons_per_row].button(f"Add to Cart (Product ID {product_id})", key=f"button_add_{product_id}"):
@@ -62,6 +64,8 @@ for product_id in product_data['Product ID']:
             cart["products"].append(product_id)
             cart["price"].append(price_data.loc[price_data['Product ID'] == product_id, 'Price'].values[0])
             cart["quantity"].append(1)
+            
+        st.session_state.cart=cart # key to write back to session state
 
 # Display items in the cart
 remove_indices = []
