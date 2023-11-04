@@ -22,27 +22,28 @@ def load_data(file):
         'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=',
         # Other headers if required
     }
-    url = 'https://github.com/laytonprend/POS-Solution/blob/main/'+file   
-    if True:# temp 
+    url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
+    
+    #if True:# temp 
     #try:
         # Send a request with the appropriate headers
-        response = requests.get(url, headers=headers)    
-        if response.status_code == 200:
+    response = requests.get(url, headers=headers)    
+        #if response.status_code == 200:
             # Save the content to a temporary file
-            #with open('temp_file.xlsx', 'wb') as f:
+            #with open('temp_file.csv', 'wb') as f:
              #   f.write(response.content)    
             #print(f)
             # Load the temporary file into a DataFrame
-            df = pd.read_excel(io.StringIO(response.content.decode('utf-8')))#'openpyxl')    
+    df = pd.read_csv(io.StringIO(response.content.decode('utf-8')))#'openpyxl')    
             # Now you have your data in the 'df' variable
-            print(df)    
+    print(df)    
      #   else:
       #      print(f"Failed to download the file. Status code: {response.status_code}")    
     #except Exception as e:
      #   print(f"An error occurred: {str(e)}")
     return df.copy()
 def load_price():
-    price_data = load_data("price.xlsx")
+    price_data = load_data("price.csv")
     # Filter price data
     date_format = "%d/%m/%Y"
     price_data['Date'] = pd.to_datetime(price_data['Date'], format=date_format, errors='coerce')
@@ -57,14 +58,14 @@ def backup_data():
         os.makedirs(backup_folder)
     
     shutil.rmtree(backup_folder, ignore_errors=True)
-    shutil.copy("products.xlsx", backup_folder)
-    shutil.copy("price.xlsx", backup_folder)
-    shutil.copy("transactions.xlsx", backup_folder)# acked up but not reinstated when reciver
+    shutil.copy("products.csv", backup_folder)
+    shutil.copy("price.csv", backup_folder)
+    shutil.copy("transactions.csv", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
 
 
-
-product_data = load_data("products.xlsx")
+product_data = load_data("products.csv")
+#product_data = load_data("products.csv")
 price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
 
@@ -177,7 +178,7 @@ for product_id, product_name, price, quantity in zip(cart["product_id"],cart["pr
 st.write(f"Total Price: ${total_price:.2f}")
 
 if st.button("Checkout"):
-    transactions_prev = load_data("transactions.xlsx")
+    transactions_prev = load_data("transactions.csv")
     transaction_id=np.max(transactions_prev['Transaction_ID'])+1#new transaction ID
     transactions = []
     for product_id, product_name, product_price, product_quantity in zip(cart["product_id"], cart["product_name"], cart["price"], cart["quantity"]):# in cart.items():
@@ -188,10 +189,10 @@ if st.button("Checkout"):
         
         #for i in range(product_info["quantity"]):
          #   transactions.append({"Product_ID": product_id, "Price": product_info["price"], "Date": datetime.now()})
-    #transactions = load_data("transactions.xlsx")
+    #transactions = load_data("transactions.csv")
     transactions_df = pd.concat([transactions_prev, pd.DataFrame(transactions)])
-    transactions_df.to_excel("transactions.xlsx", index=False)
-    st.success("Checkout successful. Transaction data saved to 'transactions.xlsx'")
+    transactions_df.to_excel("transactions.csv", index=False)
+    st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
 def update_product_data(product_data,new_product_id,new_product_name):
@@ -199,18 +200,18 @@ def update_product_data(product_data,new_product_id,new_product_name):
     new_product_entry = {"Product_ID": [product_id], "Product_Name": [new_product_name], "Date": [datetime.now()]}
     new_product_df = pd.DataFrame(new_product_entry)
     # Load the existing price data
-    #product_data = load_data("products.xlsx")
+    #product_data = load_data("products.csv")
     # Append the new data to the existing data
     updated_product_data = pd.concat([product_data, new_product_df], ignore_index=True)
     # Save the updated price data to the Excel file
-    updated_product_data.to_excel("products.xlsx", index=False)
+    updated_product_data.to_excel("products.csv", index=False)
 st.sidebar.header("Developer Options")
 ##product update
 UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_state else False
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
-    product_data = load_data("products.xlsx")
+    product_data = load_data("products.csv")
     
     
     
@@ -222,7 +223,7 @@ if st.sidebar.button("Update Product Data") or UpdateProduct:
         
         update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
-        product_data = load_data("products.xlsx")
+        product_data = load_data("products.csv")
         
 # Function to update price data
 def update_price_data(new_price, product_id):
@@ -230,11 +231,11 @@ def update_price_data(new_price, product_id):
     new_price_entry = {"Product_ID": [product_id], "Price": [new_price], "Date": [datetime.now()]}
     new_price_df = pd.DataFrame(new_price_entry)
     # Load the existing price data
-    price_data = load_data("price.xlsx")
+    price_data = load_data("price.csv")
     # Append the new data to the existing data
     updated_price_data = pd.concat([price_data, new_price_df], ignore_index=True)
     # Save the updated price data to the Excel file
-    updated_price_data.to_excel("price.xlsx", index=False)
+    updated_price_data.to_excel("price.csv", index=False)
 ##price update
 UpdatePrice = st.session_state.UpdatePrice if "UpdatePrice" in st.session_state else False
 PriceSubmission = st.session_state.PriceSubmission if "PriceSubmission" in st.session_state else []
@@ -261,8 +262,8 @@ if st.sidebar.button("Backup Data"): # shutil is a convenient and powerful modul
 
 if st.sidebar.button("Recover Data"):
     backup_folder = "backup_data"
-    shutil.copy(f"{backup_folder}/products.xlsx", "products.xlsx")
-    shutil.copy(f"{backup_folder}/price.xlsx", "price.xlsx")
+    shutil.copy(f"{backup_folder}/products.csv", "products.csv")
+    shutil.copy(f"{backup_folder}/price.csv", "price.csv")
     st.sidebar.success("Data recovered from backup.")
 
 # Show Data
