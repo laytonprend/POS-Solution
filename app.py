@@ -9,6 +9,7 @@ import pandas as pd
 from datetime import datetime
 import shutil
 import numpy as np
+import os
 
 # Load the product and price data from Excel files
 @st.cache_data
@@ -25,10 +26,20 @@ def load_price():
     # Keep only the most recent entry for each product
     price_data = price_data.drop_duplicates(subset='Product_ID', keep='first')
     return price_data
+def backup_data():
+    backup_folder = "C:/Users/layto/OneDrive/Documents/GitHub/POS-Solution/backup_data"
+    if not os.path.exists(backup_folder):
+        os.makedirs(backup_folder)
+    
+    shutil.rmtree(backup_folder, ignore_errors=True)
+    shutil.copy("products.xlsx", backup_folder)
+    shutil.copy("price.xlsx", backup_folder)
+    shutil.copy("transactions.xlsx", backup_folder)# acked up but not reinstated when reciver
+    st.sidebar.success("Data backed up.")
+    
 product_data = load_data("products.xlsx")
-
 price_data=load_price()
-
+#backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
 
 #product_data=product_data.merge(price_data,by='Product_ID',how='left')
 
@@ -55,7 +66,7 @@ button_columns = st.columns(buttons_per_row)
 # Loop through the Product_IDs to create buttons
 for product_id, product_name in zip(product_data['Product_ID'], product_data['Product_Name']):
     product_id = int(product_id)  # Convert product_id to an integer
-    if button_columns[product_id % buttons_per_row].button(f"Add to Cart Product {product_id}, {product_name}", key=f"button_add_{product_id}, {product_name}"):
+    if button_columns[(product_id-1) % buttons_per_row].button(f"Add to Cart Product {product_id}, {product_name}", key=f"button_add_{product_id}, {product_name}"):
         product_index = cart["product_id"].index(product_id) if product_id in cart["product_id"] else -1
 
         if product_index != -1:
@@ -119,11 +130,12 @@ if st.button("Checkout"):
     st.success("Checkout successful. Transaction data saved to 'transactions.xlsx'")
 
 # Developer Options
-def update_product_data(new_product_id,new_product_name):
+def update_product_data(product_data,new_product_id,new_product_name):
+    backup_data() # can recover if faulty
     new_product_entry = {"Product_ID": [product_id], "Product_Name": [new_product_name], "Date": [datetime.now()]}
     new_product_df = pd.DataFrame(new_product_entry)
     # Load the existing price data
-    product_data = load_data("price.xlsx")
+    #product_data = load_data("products.xlsx")
     # Append the new data to the existing data
     updated_product_data = pd.concat([product_data, new_product_df], ignore_index=True)
     # Save the updated price data to the Excel file
@@ -134,16 +146,23 @@ UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
-    new_product_id = np.max(product_data['Product_ID'])+1#st.sidebar.number_input("Product_ID:",step=1)
+    product_data = load_data("products.xlsx")
+    
+    
+    
+    #issue when adding new products
+    new_product_id = np.max(product_data['Product_ID'])+1 # +1 doesnt work but it should#st.sidebar.number_input("Product_ID:",step=1)
     new_product_name = st.sidebar.text_input("New Product Name:")
     if st.sidebar.button("Submit New Product") and ProductSubmission!=[new_product_id,new_product_name]:# maybe block duplicates too
         st.session_state.ProductSubmission=[new_product_id,new_product_name]
         
-        update_product_data(new_product_id,new_product_name)
+        update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
         product_data = load_data("products.xlsx")
+        
 # Function to update price data
 def update_price_data(new_price, product_id):
+    backup_data() # can recover if faulty
     new_price_entry = {"Product_ID": [product_id], "Price": [new_price], "Date": [datetime.now()]}
     new_price_df = pd.DataFrame(new_price_entry)
     # Load the existing price data
@@ -174,11 +193,7 @@ if st.sidebar.button("Clear Cart"):
     }
 
 if st.sidebar.button("Backup Data"): # shutil is a convenient and powerful module for working with files and directories in Python, making various file-related tasks easier to perform.
-    backup_folder = "backup_data"
-    shutil.rmtree(backup_folder, ignore_errors=True)
-    shutil.copy("products.xlsx", backup_folder)
-    shutil.copy("price.xlsx", backup_folder)
-    st.sidebar.success("Data backed up.")
+    backup_data()
 
 if st.sidebar.button("Recover Data"):
     backup_folder = "backup_data"
@@ -194,9 +209,3 @@ if st.sidebar.button("Show Product Data"):
 
 if st.sidebar.button("Show Price Data"):
     st.sidebar.dataframe(price_data)
-
-# Show Cart in Sidebar
-'''st.sidebar.header("Shopping Cart")
-for product_id, product_name, price, quantity in zip(cart["product_id"], cart["product_name"], cart["price"], cart["quantity"]):
-    st.sidebar.write(f"Product_ID: {product_id}, Product_Name: {product_name}, Price: ${price:.2f}, Quantity: {quantity}")
-'''
