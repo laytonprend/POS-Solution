@@ -10,12 +10,37 @@ from datetime import datetime
 import shutil
 import numpy as np
 import os
-
+import requests
+import io
 # Load the product and price data from Excel files
 @st.cache_data
-def load_data(file_path):
-    data = pd.read_excel(file_path)
-    return data.copy()
+def load_data(file):
+    #data = pd.read_excel(file)
+    #return data.copy()
+    # Define your authentication or access control headers
+    headers = {
+        'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=',
+        # Other headers if required
+    }
+    url = 'https://github.com/laytonprend/POS-Solution/blob/main/'+file   
+    if True:# temp 
+    #try:
+        # Send a request with the appropriate headers
+        response = requests.get(url, headers=headers)    
+        if response.status_code == 200:
+            # Save the content to a temporary file
+            #with open('temp_file.xlsx', 'wb') as f:
+             #   f.write(response.content)    
+            #print(f)
+            # Load the temporary file into a DataFrame
+            df = pd.read_excel(io.StringIO(response.content.decode('utf-8')))#'openpyxl')    
+            # Now you have your data in the 'df' variable
+            print(df)    
+     #   else:
+      #      print(f"Failed to download the file. Status code: {response.status_code}")    
+    #except Exception as e:
+     #   print(f"An error occurred: {str(e)}")
+    return df.copy()
 def load_price():
     price_data = load_data("price.xlsx")
     # Filter price data
@@ -36,7 +61,9 @@ def backup_data():
     shutil.copy("price.xlsx", backup_folder)
     shutil.copy("transactions.xlsx", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
-    
+
+
+
 product_data = load_data("products.xlsx")
 price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
@@ -85,6 +112,43 @@ for product_id, product_name in zip(product_data['Product_ID'], product_data['Pr
             
             
         st.session_state.cart=cart # key to write back to session state
+
+'''# Category selection
+categories = product_data["Category"].unique()
+selected_category = st.sidebar.selectbox("Select a category", categories)
+
+# Filter products by selected category
+filtered_products = product_data[product_data["Category"] == selected_category]
+
+# Number of buttons to display per row
+buttons_per_row = 5
+button_columns = st.columns(buttons_per_row)
+
+# Loop through the products to create buttons
+for index, row in filtered_products.iterrows():
+    product_id = int(row["Product_ID"])
+    product_name = row["Product_Name"]
+    
+    if button_columns[(product_id - 1) % buttons_per_row].button(
+        f"Add to Cart Product {product_id}, {product_name}",
+        key=f"button_add_{product_id}_{product_name}",
+    ):
+        product_index = cart["product_id"].index(product_id) if product_id in cart["product_id"] else -1
+
+        if product_index != -1:
+            # Update quantity and price for existing product
+            cart["quantity"][product_index] += 1
+        else:
+            # Add new product to cart
+            try:
+                cart["price"].append(price_data.loc[price_data['Product_ID'] == product_id, 'Price'].values[-1])
+                cart["product_id"].append(product_id)
+                cart["product_name"].append(product_name)
+                cart["quantity"].append(1)
+            except IndexError:
+                st.title(f'Please add price data for {product_name}, unable to add to cart')
+
+        st.session_state.cart = cart'''
 
 # Display items in the cart
 remove_indices = []
