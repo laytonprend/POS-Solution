@@ -19,7 +19,7 @@ def load_data(file):
     #return data.copy()
     # Define your authentication or access control headers
     headers = {
-        'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=',
+        'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=', # not used?
         # Other headers if required
     }
     url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
@@ -27,16 +27,15 @@ def load_data(file):
     #if True:# temp 
     #try:
         # Send a request with the appropriate headers
-    response = requests.get(url, headers=headers)    
-        #if response.status_code == 200:
-            # Save the content to a temporary file
-            #with open('temp_file.csv', 'wb') as f:
-             #   f.write(response.content)    
-            #print(f)
-            # Load the temporary file into a DataFrame
-    df = pd.read_csv(io.StringIO(response.content.decode('utf-8')))#'openpyxl')    
-            # Now you have your data in the 'df' variable
-    print(df)    
+    download = requests.get(url).content
+    
+    # Reading the downloaded content and turning it into a pandas dataframe
+    
+    df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+    
+    # Printing out the first 5 rows of the dataframe
+    
+    print (df.head())  
      #   else:
       #      print(f"Failed to download the file. Status code: {response.status_code}")    
     #except Exception as e:
