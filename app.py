@@ -18,31 +18,27 @@ def load_data(file):
     #data = pd.read_excel(file)
     #return data.copy()
     # Define your authentication or access control headers
-    headers = {
-        'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=', # not used?
-        # Other headers if required
-    }
-    url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
+    #url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
+    token="SHA256:iNiOIQ9+/m+2Tk6seRKeTvr3YdAqdUy25iVAl+Ex6yM"
     
-    #if True:# temp 
-    #try:
-        # Send a request with the appropriate headers
-    download = requests.get(url).content
+    url='https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA'
+    download=requests.get(url, auth=('laytonprend', token)).content
     
-    # Reading the downloaded content and turning it into a pandas dataframe
-    
+    #download = requests.get(url).content
+        
+        # Reading the downloaded content and turning it into a pandas dataframe
+        
     df = pd.read_csv(io.StringIO(download.decode('utf-8')))
-    
-    # Printing out the first 5 rows of the dataframe
-    
-    print (df.head())  
+    #print (df.head())  
      #   else:
       #      print(f"Failed to download the file. Status code: {response.status_code}")    
     #except Exception as e:
      #   print(f"An error occurred: {str(e)}")
     return df.copy()
+def upload_data(file):
+    pass
 def load_price():
-    price_data = load_data("price.csv")
+    price_data = load_data('price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
     # Filter price data
     date_format = "%d/%m/%Y"
     price_data['Date'] = pd.to_datetime(price_data['Date'], format=date_format, errors='coerce')
@@ -63,7 +59,7 @@ def backup_data():
     st.sidebar.success("Data backed up.")
 
 
-product_data = load_data("products.csv")
+product_data = load_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
 price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
@@ -177,7 +173,7 @@ for product_id, product_name, price, quantity in zip(cart["product_id"],cart["pr
 st.write(f"Total Price: ${total_price:.2f}")
 
 if st.button("Checkout"):
-    transactions_prev = load_data("transactions.csv")
+    transactions_prev = load_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
     transaction_id=np.max(transactions_prev['Transaction_ID'])+1#new transaction ID
     transactions = []
     for product_id, product_name, product_price, product_quantity in zip(cart["product_id"], cart["product_name"], cart["price"], cart["quantity"]):# in cart.items():
