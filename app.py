@@ -79,7 +79,7 @@ def backup_data():
     shutil.copy("transactions.csv", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
 
-def create_sidebar():
+def create_sidebar(product_data, price_data):
     st.sidebar.header("Developer Options")
     ##product update
     UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_state else False
@@ -238,7 +238,7 @@ if st.button("Checkout"):
     #transactions_df.to_csv("transactions.csv", index=False)
     upload_data(transactions_df,'transactions.csv')
     st.session_state.cart=init_cart()
-    product_data, price_data = create_sidebar()
+    product_data, price_data = create_sidebar(product_data, price_data)
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
@@ -264,4 +264,4 @@ def update_price_data(new_price, product_id):
         # Save the updated price data to the Excel file
         updated_price_data.to_excel("price.csv", index=False)
 
-product_data, price_data=create_sidebar()
+product_data, price_data=create_sidebar(product_data, price_data)
