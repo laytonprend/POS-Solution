@@ -238,7 +238,7 @@ if st.button("Checkout"):
     #transactions_df.to_csv("transactions.csv", index=False)
     upload_data(transactions_df,'transactions.csv')
     st.session_state.cart=init_cart()
-    create_sidebar()
+    product_data, price_data = create_sidebar()
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
