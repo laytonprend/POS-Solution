@@ -12,33 +12,48 @@ import numpy as np
 import os
 import requests
 import io
+from github import Github, Auth
 # Load the product and price data from Excel files
 @st.cache_data
-def load_data(file):
+def download_data(file):
     #data = pd.read_excel(file)
     #return data.copy()
     # Define your authentication or access control headers
     #url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
-    token="SHA256:iNiOIQ9+/m+2Tk6seRKeTvr3YdAqdUy25iVAl+Ex6yM"
-    
+    token="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"
+    headers = {'Authorization':"Token "+token}
     url='https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA'
-    download=requests.get(url, auth=('laytonprend', token)).content
-    
-    #download = requests.get(url).content
-        
-        # Reading the downloaded content and turning it into a pandas dataframe
+    download=requests.get(url, headers=headers).content
         
     df = pd.read_csv(io.StringIO(download.decode('utf-8')))
     #print (df.head())  
-     #   else:
-      #      print(f"Failed to download the file. Status code: {response.status_code}")    
-    #except Exception as e:
-     #   print(f"An error occurred: {str(e)}")
     return df.copy()
-def upload_data(file):
-    pass
+def upload_data(df,file_path):
+    owner='laytonprend'
+    access_token='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' 
+    branch_name = 'main'  # Replace with your desired branch name
+    #file_path = f'{filename}.csv'  # Replace with the path to the file in your repository
+    repo='POS-Solution'
+    repo_name=f'{owner}/{repo}'
+    print(repo_name)
+    
+    g = Github(access_token)
+    repo = g.get_repo(repo_name)
+    df_content = transactions_df.to_csv(index=False)
+    
+    existing_file = repo.get_contents(file_path, ref=branch_name)
+    existing_sha = existing_file.sha if existing_file else None
+
+    # Create or update the file, including the existing SHA
+    commit_message = "Updating transactions data"
+    repo.update_file(file_path, commit_message, df_content, branch=branch_name, sha=existing_sha)
+        
+    
+    #repo.create_file(file_path, "Creating file from URL", df_content, branch=branch_name)
+    print(f'File at "{file_path}" CREATED in the repository')
+
 def load_price():
-    price_data = load_data('price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
+    price_data = download_data('price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
     # Filter price data
     date_format = "%d/%m/%Y"
     price_data['Date'] = pd.to_datetime(price_data['Date'], format=date_format, errors='coerce')
@@ -59,7 +74,7 @@ def backup_data():
     st.sidebar.success("Data backed up.")
 
 
-product_data = load_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
+product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
 price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
@@ -109,42 +124,7 @@ for product_id, product_name in zip(product_data['Product_ID'], product_data['Pr
             
         st.session_state.cart=cart # key to write back to session state
 
-'''# Category selection
-categories = product_data["Category"].unique()
-selected_category = st.sidebar.selectbox("Select a category", categories)
 
-# Filter products by selected category
-filtered_products = product_data[product_data["Category"] == selected_category]
-
-# Number of buttons to display per row
-buttons_per_row = 5
-button_columns = st.columns(buttons_per_row)
-
-# Loop through the products to create buttons
-for index, row in filtered_products.iterrows():
-    product_id = int(row["Product_ID"])
-    product_name = row["Product_Name"]
-    
-    if button_columns[(product_id - 1) % buttons_per_row].button(
-        f"Add to Cart Product {product_id}, {product_name}",
-        key=f"button_add_{product_id}_{product_name}",
-    ):
-        product_index = cart["product_id"].index(product_id) if product_id in cart["product_id"] else -1
-
-        if product_index != -1:
-            # Update quantity and price for existing product
-            cart["quantity"][product_index] += 1
-        else:
-            # Add new product to cart
-            try:
-                cart["price"].append(price_data.loc[price_data['Product_ID'] == product_id, 'Price'].values[-1])
-                cart["product_id"].append(product_id)
-                cart["product_name"].append(product_name)
-                cart["quantity"].append(1)
-            except IndexError:
-                st.title(f'Please add price data for {product_name}, unable to add to cart')
-
-        st.session_state.cart = cart'''
 
 # Display items in the cart
 remove_indices = []
@@ -173,7 +153,7 @@ for product_id, product_name, price, quantity in zip(cart["product_id"],cart["pr
 st.write(f"Total Price: ${total_price:.2f}")
 
 if st.button("Checkout"):
-    transactions_prev = load_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+    transactions_prev = download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
     transaction_id=np.max(transactions_prev['Transaction_ID'])+1#new transaction ID
     transactions = []
     for product_id, product_name, product_price, product_quantity in zip(cart["product_id"], cart["product_name"], cart["price"], cart["quantity"]):# in cart.items():
@@ -186,7 +166,8 @@ if st.button("Checkout"):
          #   transactions.append({"Product_ID": product_id, "Price": product_info["price"], "Date": datetime.now()})
     #transactions = load_data("transactions.csv")
     transactions_df = pd.concat([transactions_prev, pd.DataFrame(transactions)])
-    transactions_df.to_excel("transactions.csv", index=False)
+    transactions_df.to_csv("transactions.csv", index=False)
+    upload_data(transactions_df,'transactions.csv')
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
@@ -206,7 +187,7 @@ UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
-    product_data = load_data("products.csv")
+    product_data = download_data("products.csv")
     
     
     
@@ -218,7 +199,7 @@ if st.sidebar.button("Update Product Data") or UpdateProduct:
         
         update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
-        product_data = load_data("products.csv")
+        product_data = download_data("products.csv")
         
 # Function to update price data
 def update_price_data(new_price, product_id):
@@ -226,7 +207,7 @@ def update_price_data(new_price, product_id):
     new_price_entry = {"Product_ID": [product_id], "Price": [new_price], "Date": [datetime.now()]}
     new_price_df = pd.DataFrame(new_price_entry)
     # Load the existing price data
-    price_data = load_data("price.csv")
+    price_data = load_price()
     # Append the new data to the existing data
     updated_price_data = pd.concat([price_data, new_price_df], ignore_index=True)
     # Save the updated price data to the Excel file

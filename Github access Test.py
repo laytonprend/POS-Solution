@@ -10,11 +10,11 @@ import pandas as pd
 
 # Define your authentication or access control headers
 headers = {
-    'Authorization': 'Bearer SHA256:22Uyl/hyLTJNhNaGTRuqqdQq3G+22qsLa7Yw0a0cFTw=',
+    'Authorization': 'Bearer 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=',
     # Other headers if required
 }
 
-url = 'https://example.com/path/to/your/protected/excel-file.xlsx'
+url = 'auth = Auth.Token("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") '
 
 try:
     # Send a request with the appropriate headers
