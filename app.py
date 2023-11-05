@@ -93,14 +93,15 @@ st.title("Restaurant POS System")
 
 # Shopping cart
 st.header("Shopping Cart")
-
-cart = st.session_state.cart if "cart" in st.session_state else {
-    "product_id": [],
-    "product_name": [],
-    "price": [],
-    "quantity": []
-}
-
+def init_cart():
+     return {
+        "product_id": [],
+        "product_name": [],
+        "price": [],
+        "quantity": []
+    }
+    
+cart = st.session_state.cart if "cart" in st.session_state else init_cart()
 # Number of buttons to display per row
 buttons_per_row = 5
 button_columns = st.columns(buttons_per_row)
@@ -172,8 +173,9 @@ if st.button("Checkout"):
          #   transactions.append({"Product_ID": product_id, "Price": product_info["price"], "Date": datetime.now()})
     #transactions = load_data("transactions.csv")
     transactions_df = pd.concat([transactions_prev, pd.DataFrame(transactions)])
-    transactions_df.to_csv("transactions.csv", index=False)
+    #transactions_df.to_csv("transactions.csv", index=False)
     upload_data(transactions_df,'transactions.csv')
+    st.session_state.cart=init_cart()
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
@@ -233,11 +235,7 @@ if st.sidebar.button("Update Price Data") or UpdatePrice:
         price_data=load_price()
 
 if st.sidebar.button("Clear Cart"):
-    cart = {
-        "products": [],
-        "price": [],
-        "quantity": []
-    }
+    st.session_state.cart= init_cart()
 
 if st.sidebar.button("Backup Data"): # shutil is a convenient and powerful module for working with files and directories in Python, making various file-related tasks easier to perform.
     backup_data()
