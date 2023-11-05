@@ -18,3 +18,5 @@ Transaction_ID,Date,Total_Price,Unit_Price,Quantity,Product_ID,Product_Name
 9,2023-11-04 12:06:05,8,4.0,2,2,product 2
 10,2023-11-05 21:53:30.659766,2,2.0,1,2,product 2
 10,2023-11-05 21:53:30.659766,4,4.0,1,4,product 4
+11,2023-11-05 22:31:59.300355,12,12.0,1,7,product 7
+11,2023-11-05 22:31:59.300355,4,4.0,1,4,product 4
