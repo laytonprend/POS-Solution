@@ -254,5 +254,8 @@ if st.sidebar.button("Show Product Data"):
 
 if st.sidebar.button("Show Price Data"):
     st.sidebar.dataframe(price_data)
-if st.sidebar.button("Show transaction Data"):
-    st.sidebar.dataframe(download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ"))
+
+transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+if st.sidebar.button("Show Transaction Data"):
+    st.sidebar.dataframe(transaction_data)
+st.sidebar.write('Most recent transaction',np.max(transaction_data['Date']))
