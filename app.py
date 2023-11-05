@@ -79,7 +79,68 @@ def backup_data():
     shutil.copy("transactions.csv", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
 
+def create_sidebar():
+    st.sidebar.header("Developer Options")
+    ##product update
+    UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_state else False
+    ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
+    if st.sidebar.button("Update Product Data") or UpdateProduct:
+        st.session_state.UpdateProduct=True
+        product_data = download_data("products.csv")
+        
+        
+        
+        #issue when adding new products
+        new_product_id = np.max(product_data['Product_ID'])+1 # +1 doesnt work but it should#st.sidebar.number_input("Product_ID:",step=1)
+        new_product_name = st.sidebar.text_input("New Product Name:")
+        if st.sidebar.button("Submit New Product") and ProductSubmission!=[new_product_id,new_product_name]:# maybe block duplicates too
+            st.session_state.ProductSubmission=[new_product_id,new_product_name]
+            
+            update_product_data(product_data,new_product_id,new_product_name)
+            st.sidebar.success("Product data updated.")
+            product_data = download_data("products.csv")
+            
+    # Function to update price data
 
+    ##price update
+    UpdatePrice = st.session_state.UpdatePrice if "UpdatePrice" in st.session_state else False
+    PriceSubmission = st.session_state.PriceSubmission if "PriceSubmission" in st.session_state else []
+    if st.sidebar.button("Update Price Data") or UpdatePrice:
+        st.session_state.UpdatePrice=True
+        product_id = st.sidebar.number_input("Product_ID:",step=1)
+        new_price = st.sidebar.number_input("New Price:", step=0.25)
+        if st.sidebar.button("Submit New Price") and PriceSubmission!=[product_id,new_price]:# maybe block duplicates too
+            st.session_state.PriceSubmission=[product_id,new_price]
+            
+            update_price_data(new_price, product_id)
+            st.sidebar.success("Price data updated.")
+            price_data=load_price()
+
+    if st.sidebar.button("Clear Cart"):
+        st.session_state.cart= init_cart()
+
+    if st.sidebar.button("Backup Data"): # shutil is a convenient and powerful module for working with files and directories in Python, making various file-related tasks easier to perform.
+        backup_data()
+
+    if st.sidebar.button("Recover Data"):
+        backup_folder = "backup_data"
+        shutil.copy(f"{backup_folder}/products.csv", "products.csv")
+        shutil.copy(f"{backup_folder}/price.csv", "price.csv")
+        st.sidebar.success("Data recovered from backup.")
+
+    # Show Data
+    st.sidebar.header("Data Files")
+
+    if st.sidebar.button("Show Product Data"):
+        st.sidebar.dataframe(product_data)
+
+    if st.sidebar.button("Show Price Data"):
+        st.sidebar.dataframe(price_data)
+
+    transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+    if st.sidebar.button("Show Transaction Data"):
+        st.sidebar.dataframe(transaction_data)
+    st.sidebar.write('Most recent transaction',np.max(transaction_data['Date']))
 product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
 price_data=load_price()
@@ -176,6 +237,7 @@ if st.button("Checkout"):
     #transactions_df.to_csv("transactions.csv", index=False)
     upload_data(transactions_df,'transactions.csv')
     st.session_state.cart=init_cart()
+    create_sidebar()
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
 # Developer Options
@@ -189,73 +251,16 @@ def update_product_data(product_data,new_product_id,new_product_name):
     updated_product_data = pd.concat([product_data, new_product_df], ignore_index=True)
     # Save the updated price data to the Excel file
     updated_product_data.to_excel("products.csv", index=False)
-st.sidebar.header("Developer Options")
-##product update
-UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_state else False
-ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
-if st.sidebar.button("Update Product Data") or UpdateProduct:
-    st.session_state.UpdateProduct=True
-    product_data = download_data("products.csv")
-    
-    
-    
-    #issue when adding new products
-    new_product_id = np.max(product_data['Product_ID'])+1 # +1 doesnt work but it should#st.sidebar.number_input("Product_ID:",step=1)
-    new_product_name = st.sidebar.text_input("New Product Name:")
-    if st.sidebar.button("Submit New Product") and ProductSubmission!=[new_product_id,new_product_name]:# maybe block duplicates too
-        st.session_state.ProductSubmission=[new_product_id,new_product_name]
-        
-        update_product_data(product_data,new_product_id,new_product_name)
-        st.sidebar.success("Product data updated.")
-        product_data = download_data("products.csv")
-        
-# Function to update price data
+
 def update_price_data(new_price, product_id):
-    backup_data() # can recover if faulty
-    new_price_entry = {"Product_ID": [product_id], "Price": [new_price], "Date": [datetime.now()]}
-    new_price_df = pd.DataFrame(new_price_entry)
-    # Load the existing price data
-    price_data = load_price()
-    # Append the new data to the existing data
-    updated_price_data = pd.concat([price_data, new_price_df], ignore_index=True)
-    # Save the updated price data to the Excel file
-    updated_price_data.to_excel("price.csv", index=False)
-##price update
-UpdatePrice = st.session_state.UpdatePrice if "UpdatePrice" in st.session_state else False
-PriceSubmission = st.session_state.PriceSubmission if "PriceSubmission" in st.session_state else []
-if st.sidebar.button("Update Price Data") or UpdatePrice:
-    st.session_state.UpdatePrice=True
-    product_id = st.sidebar.number_input("Product_ID:",step=1)
-    new_price = st.sidebar.number_input("New Price:", step=0.25)
-    if st.sidebar.button("Submit New Price") and PriceSubmission!=[product_id,new_price]:# maybe block duplicates too
-        st.session_state.PriceSubmission=[product_id,new_price]
-        
-        update_price_data(new_price, product_id)
-        st.sidebar.success("Price data updated.")
-        price_data=load_price()
+        backup_data() # can recover if faulty
+        new_price_entry = {"Product_ID": [product_id], "Price": [new_price], "Date": [datetime.now()]}
+        new_price_df = pd.DataFrame(new_price_entry)
+        # Load the existing price data
+        price_data = load_price()
+        # Append the new data to the existing data
+        updated_price_data = pd.concat([price_data, new_price_df], ignore_index=True)
+        # Save the updated price data to the Excel file
+        updated_price_data.to_excel("price.csv", index=False)
 
-if st.sidebar.button("Clear Cart"):
-    st.session_state.cart= init_cart()
-
-if st.sidebar.button("Backup Data"): # shutil is a convenient and powerful module for working with files and directories in Python, making various file-related tasks easier to perform.
-    backup_data()
-
-if st.sidebar.button("Recover Data"):
-    backup_folder = "backup_data"
-    shutil.copy(f"{backup_folder}/products.csv", "products.csv")
-    shutil.copy(f"{backup_folder}/price.csv", "price.csv")
-    st.sidebar.success("Data recovered from backup.")
-
-# Show Data
-st.sidebar.header("Data Files")
-
-if st.sidebar.button("Show Product Data"):
-    st.sidebar.dataframe(product_data)
-
-if st.sidebar.button("Show Price Data"):
-    st.sidebar.dataframe(price_data)
-
-transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
-if st.sidebar.button("Show Transaction Data"):
-    st.sidebar.dataframe(transaction_data)
-st.sidebar.write('Most recent transaction',np.max(transaction_data['Date']))
+create_sidebar()
