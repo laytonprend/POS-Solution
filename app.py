@@ -254,3 +254,5 @@ if st.sidebar.button("Show Product Data"):
 
 if st.sidebar.button("Show Price Data"):
     st.sidebar.dataframe(price_data)
+if st.sidebar.button("Show transaction Data"):
+    st.sidebar.dataframe(download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ"))
