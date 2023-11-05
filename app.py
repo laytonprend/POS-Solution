@@ -16,7 +16,9 @@ try :
     import io
     from github import Github, Auth
 except: # when online no file so except statement is run
-    import git+https://github.com/streamlit/streamlit as st
+    pip install -r requirements.txt
+
+    '''import git+https://github.com/streamlit/streamlit as st
     import git+https://github.com/pandas/pandas as pd
     from git+https://github.com/datetime/datetime import datetime
     import git+https://github.com/shutil/shutil
@@ -26,7 +28,7 @@ except: # when online no file so except statement is run
     import git+https://github.com/requests/requests 
     import git+https://github.com/io/io
     from git+https://github.com/PyGithub/PyGithub import Github, Auth#egg=somepackage import SomePackage
-    #https://github.com/PyGithub/PyGithub
+    #https://github.com/PyGithub/PyGithub'''
 
 # change to github URL
 
