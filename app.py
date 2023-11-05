@@ -4,15 +4,32 @@ Created on Wed Nov  1 09:25:49 2023
 
 @author: layto
 """
-import streamlit as st
-import pandas as pd
-from datetime import datetime
-import shutil
-import numpy as np
-import os
-import requests
-import io
-from github import Github, Auth
+try :
+    test=pd.read_csv('price.csv')
+    import streamlit as st
+    import pandas as pd
+    from datetime import datetime
+    import shutil
+    import numpy as np
+    import os
+    import requests
+    import io
+    from github import Github, Auth
+except: # when online no file so except statement is run
+    import git+https://github.com/streamlit/streamlit as st
+    import git+https://github.com/pandas/pandas as pd
+    from git+https://github.com/datetime/datetime import datetime
+    import git+https://github.com/shutil/shutil
+    import git+https://github.com/numpy/numpy as np
+    import git+https://github.com/os/os 
+    import git+https://github.com/os/os 
+    import git+https://github.com/requests/requests 
+    import git+https://github.com/io/io
+    from git+https://github.com/PyGithub/PyGithub import Github, Auth#egg=somepackage import SomePackage
+    #https://github.com/PyGithub/PyGithub
+
+# change to github URL
+
 # Load the product and price data from Excel files
 @st.cache_data
 def download_data(file):
