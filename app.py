@@ -4,19 +4,17 @@ Created on Wed Nov  1 09:25:49 2023
 
 @author: layto
 """
-try :
-    test=pd.read_csv('price.csv')
-    import streamlit as st
-    import pandas as pd
-    from datetime import datetime
-    import shutil
-    import numpy as np
-    import os
-    import requests
-    import io
-    from github import Github, Auth
-except: # when online no file so except statement is run
-    pip install -r requirements.txt
+
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+import shutil
+import numpy as np
+import os
+import requests
+import io
+from github import Github, Auth
+
 
 
 # change to github URL
