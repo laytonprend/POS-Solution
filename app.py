@@ -141,6 +141,7 @@ def create_sidebar():
     if st.sidebar.button("Show Transaction Data"):
         st.sidebar.dataframe(transaction_data)
     st.sidebar.write('Most recent transaction',np.max(transaction_data['Date']))
+    return product_data, price_data
 product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
 price_data=load_price()
@@ -263,4 +264,4 @@ def update_price_data(new_price, product_id):
         # Save the updated price data to the Excel file
         updated_price_data.to_excel("price.csv", index=False)
 
-create_sidebar()
+product_data, price_data=create_sidebar()
