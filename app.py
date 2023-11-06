@@ -79,10 +79,9 @@ def backup_data():
     shutil.copy("transactions.csv", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
 
-
-product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
+st.session_state.product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
-price_data=load_price()
+st.session_state.price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
 
 #product_data=product_data.merge(price_data,by='Product_ID',how='left')
@@ -109,7 +108,7 @@ button_columns = st.columns(buttons_per_row)
  #   st.session_state.button_clicked=True
     #cart
 # Loop through the Product_IDs to create buttons
-for product_id, product_name in zip(product_data['Product_ID'], product_data['Product_Name']):
+for product_id, product_name in zip(st.session_state.product_data['Product_ID'], st.session_state.product_data['Product_Name']):
     product_id = int(product_id)  # Convert product_id to an integer
     if button_columns[(product_id-1) % buttons_per_row].button(f"Add to Cart Product {product_id}, {product_name}", key=f"button_add_{product_id}, {product_name}"):
         product_index = cart["product_id"].index(product_id) if product_id in cart["product_id"] else -1
@@ -121,9 +120,9 @@ for product_id, product_name in zip(product_data['Product_ID'], product_data['Pr
             # Add new product to cart
             
             try:
-                cart["price"].append(price_data.loc[price_data['Product_ID'] == product_id, 'Price'].values[-1]) # price first as may not be in
+                cart["price"].append(st.session_state.price_data.loc[st.session_state.price_data['Product_ID'] == product_id, 'Price'].values[-1]) # price first as may not be in
                 cart["product_id"].append(product_id)
-                cart["product_name"].append(product_data.loc[product_data['Product_ID'] == product_id, 'Product_Name'].values[-1])
+                cart["product_name"].append(st.session_state.product_data.loc[st.session_state.product_data['Product_ID'] == product_id, 'Product_Name'].values[-1])
                 cart["quantity"].append(1)
             except IndexError:
                 st.title(f'Please add price data for {product_name}, unable to add to cart')
@@ -172,9 +171,9 @@ if st.button("Checkout"):
         #for i in range(product_info["quantity"]):
          #   transactions.append({"Product_ID": product_id, "Price": product_info["price"], "Date": datetime.now()})
     #transactions = load_data("transactions.csv")
-    transactions_data = pd.concat([transactions_prev, pd.DataFrame(transactions)])
+    st.session_state.transactions_data = pd.concat([transactions_prev, pd.DataFrame(transactions)])
     #transactions_df.to_csv("transactions.csv", index=False)
-    upload_data(transactions_data,'transactions.csv')
+    upload_data(st.session_state.transactions_data,'transactions.csv')
     st.session_state.cart=init_cart()
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
@@ -197,19 +196,19 @@ UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
-    product_data = download_data("products.csv")
+    st.session_state.product_data = download_data("products.csv")
     
     
     
     #issue when adding new products
-    new_product_id = np.max(product_data['Product_ID'])+1 # +1 doesnt work but it should#st.sidebar.number_input("Product_ID:",step=1)
+    new_product_id = np.max(st.session_state.product_data['Product_ID'])+1 # +1 doesnt work but it should#st.sidebar.number_input("Product_ID:",step=1)
     new_product_name = st.sidebar.text_input("New Product Name:")
     if st.sidebar.button("Submit New Product") and ProductSubmission!=[new_product_id,new_product_name]:# maybe block duplicates too
         st.session_state.ProductSubmission=[new_product_id,new_product_name]
         
         #update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
-        product_data = download_data("products.csv")
+        st.session_state.product_data = download_data("products.csv")
         
 # Function to update price data
 def update_price_data(new_price, product_id):
@@ -221,6 +220,7 @@ def update_price_data(new_price, product_id):
     # Append the new data to the existing data
     updated_price_data = pd.concat([price_data, new_price_df], ignore_index=True)
     # Save the updated price data to the Excel file
+    #return updated_price_data 
     
     #updated_price_data.to_excel("price.csv", index=False)
 ##price update
@@ -235,7 +235,7 @@ if st.sidebar.button("Update Price Data") or UpdatePrice:
         
         update_price_data(new_price, product_id)
         st.sidebar.success("Price data updated.")
-        price_data=load_price()
+        st.session_state.price_data=load_price()
 
 if st.sidebar.button("Clear Cart"):
     st.session_state.cart= init_cart()
@@ -253,12 +253,12 @@ if st.sidebar.button("Recover Data"):
 st.sidebar.header("Data Files")
 
 if st.sidebar.button("Show Product Data"):
-    st.sidebar.dataframe(product_data)
+    st.sidebar.dataframe(st.session_state.product_data)
 
 if st.sidebar.button("Show Price Data"):
-    st.sidebar.dataframe(price_data)
+    st.sidebar.dataframe(st.session_state.price_data)
 
-transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+st.session_state.transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
 if st.sidebar.button("Show Transaction Data"):
-    st.sidebar.dataframe(transaction_data)
-st.sidebar.write('Most recent transaction',np.max(transaction_data['Date']))
+    st.sidebar.dataframe(st.session_state.transaction_data)
+st.sidebar.write('Most recent transaction',np.max(st.session_state.transaction_data['Date']))
