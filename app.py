@@ -159,6 +159,7 @@ for product_id, product_name, price, quantity in zip(cart["product_id"],cart["pr
 st.write(f"Total Price: ${total_price:.2f}")
 
 if st.button("Checkout"):
+    download_data.clear() # clear function so reload raw data
     transactions_prev = download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
     transaction_id=np.max(transactions_prev['Transaction_ID'])+1#new transaction ID
     transactions = []
@@ -196,6 +197,7 @@ UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
+    download_data.clear() # clear function so reload raw data
     st.session_state.product_data = download_data("products.csv")
     
     
@@ -208,6 +210,7 @@ if st.sidebar.button("Update Product Data") or UpdateProduct:
         
         #update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
+        download_data.clear() # clear function so reload raw data
         st.session_state.product_data = download_data("products.csv")
         
 # Function to update price data
@@ -258,7 +261,8 @@ if st.sidebar.button("Show Product Data"):
 if st.sidebar.button("Show Price Data"):
     st.sidebar.dataframe(st.session_state.price_data)
 
+download_data.clear() # clear function so reload raw data
 st.session_state.transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
 if st.sidebar.button("Show Transaction Data"):
-    st.sidebar.dataframe(st.session_state.transaction_data)
+    st.sidebar.dataframe(st.session_state.transaction_data.sort_values(by='Date', ascending=False))
 st.sidebar.write('Most recent transaction',np.max(st.session_state.transaction_data['Date']))
