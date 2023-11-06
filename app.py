@@ -45,14 +45,14 @@ def upload_data(df,file_path):
     
     g = Github(access_token)
     repo = g.get_repo(repo_name)
-    df_content = transactions_df.to_csv(index=False)
+    df_content = df.to_csv(index=False)
     
     existing_file = repo.get_contents(file_path, ref=branch_name)
     existing_sha = existing_file.sha if existing_file else None
 
     # Create or update the file, including the existing SHA
-    commit_message = "Updating transactions data"
-    repo.update_file(file_path, commit_message, df_content, branch=branch_name, sha=existing_sha)
+    commit_message = f"Updating {file_path} data"
+    repo.update_file(file_path, commit_message, df_content, branch=branch_name, sha=existing_sha) # also create_file
         
     
     #repo.create_file(file_path, "Creating file from URL", df_content, branch=branch_name)
