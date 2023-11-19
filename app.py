@@ -175,6 +175,7 @@ if st.button("Checkout"):
     st.session_state.transactions_data = pd.concat([transactions_prev, pd.DataFrame(transactions)])
     #transactions_df.to_csv("transactions.csv", index=False)
     upload_data(st.session_state.transactions_data,'transactions.csv')
+    cart=init_cart()
     st.session_state.cart=init_cart()
     st.success("Checkout successful. Transaction data saved to 'transactions.csv'")
 
