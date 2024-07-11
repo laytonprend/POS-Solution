@@ -12,7 +12,7 @@ import shutil
 import numpy as np
 import os
 import requests
-import io
+from io import StringIO
 from github import Github, Auth
 
 
@@ -20,23 +20,26 @@ from github import Github, Auth
 # change to github URL
 
 # Load the product and price data from Excel files
-@st.cache_data
+
+#@st.cache_data # is decorator only 1 function-yes
 def download_data(file):
-    #data = pd.read_excel(file)
-    #return data.copy()
-    # Define your authentication or access control headers
-    #url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'https://github.com/laytonprend/POS-Solution/blob/main/'+file
-    token="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"
-    headers = {'Authorization':"Token "+token}
-    url='https://raw.githubusercontent.com/laytonprend/POS-Solution/main/'+file#'products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA'
-    download=requests.get(url, headers=headers).content
-        
-    df = pd.read_csv(io.StringIO(download.decode('utf-8')))
-    #print (df.head())  
-    return df.copy()
+  url = 'https://raw.githubusercontent.com/laytonprend/POS-Solution/main/' + file
+  print(url)
+  download = requests.get(url)
+
+  if download.status_code == 200:
+      # Check file extension for appropriate read method 
+      if file.endswith('.csv'):
+          df = pd.read_csv(StringIO(download.content.decode('utf-8')))
+      else:
+          df = pd.read_excel(StringIO(download.content))  # Assuming Excel if not CSV
+      return df.copy()
+  else:
+      print(f"Error downloading file: {download.status_code}")
+      return None  # Handle download error
 def upload_data(df,file_path):
     owner='laytonprend'
-    access_token='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'#'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' 
+    access_token='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'#'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' 
     branch_name = 'main'  # Replace with your desired branch name
     #file_path = f'{filename}.csv'  # Replace with the path to the file in your repository
     repo='POS-Solution'
@@ -59,9 +62,11 @@ def upload_data(df,file_path):
     print(f'File at "{file_path}" CREATED in the repository')
 
 def load_price():
-    price_data = download_data('price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
+    price_data = download_data('price.csv')#?token=GHSAT0AAAAAACUX2PDDRBOAKGVADX3TQMBYZUQGKCA')#'price.csv?token=GHSAT0AAAAAACUX2XWMPFXQN44LBUFCRE6QZUQF7ZA')#'price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
+    #https://raw.githubusercontent.com/laytonprend/POS-Solution/main/price.csv?token=GHSAT0AAAAAACUX2XWMPFXQN44LBUFCRE6QZUQF7ZA
     # Filter price data
-    date_format = "%d/%m/%Y %H:%M"#"%d/%m/%Y"
+    print(price_data.head())
+    date_format = "%d/%m/%Y %H:%M" #%H:%M"#"%d/%m/%Y"
     price_data['Date'] = pd.to_datetime(price_data['Date'], format=date_format, errors='coerce')
     price_data = price_data.sort_values(by=['Product_ID', 'Date'], ascending=[True, False])
     
@@ -79,7 +84,7 @@ def backup_data():
     shutil.copy("transactions.csv", backup_folder)# acked up but not reinstated when reciver
     st.sidebar.success("Data backed up.")
 
-st.session_state.product_data = download_data('products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
+st.session_state.product_data = download_data('products.csv')#?token=GHSAT0AAAAAACUX2XWMSFK6S4Q3A4GH23OUZUQGAQQ')#'products.csv?token=GHSAT0AAAAAACJ3ULJU47RQPVWBVCFS22EQZKGMZRA')
 #product_data = load_data("products.csv")
 st.session_state.price_data=load_price()
 #backup_data() # auto backs up at the start of the code # if backed up then any faults cant be recovered
@@ -159,8 +164,8 @@ for product_id, product_name, price, quantity in zip(cart["product_id"],cart["pr
 st.write(f"Total Price: ${total_price:.2f}")
 
 if st.button("Checkout"):
-    download_data.clear() # clear function so reload raw data
-    transactions_prev = download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+    #download_data.clear() # clear function so reload raw data
+    transactions_prev = download_data('transactions.csv')#?token=GHSAT0AAAAAACUX2XWM36QGCSK7KFGRMQKQZUQGBCA')#"transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
     transaction_id=np.max(transactions_prev['Transaction_ID'])+1#new transaction ID
     transactions = []
     for product_id, product_name, product_price, product_quantity in zip(cart["product_id"], cart["product_name"], cart["price"], cart["quantity"]):# in cart.items():
@@ -198,7 +203,7 @@ UpdateProduct = st.session_state.UpdateProduct if "UpdateProduct" in st.session_
 ProductSubmission = st.session_state.ProductSubmission if "ProductSubmission" in st.session_state else []
 if st.sidebar.button("Update Product Data") or UpdateProduct:
     st.session_state.UpdateProduct=True
-    download_data.clear() # clear function so reload raw data
+    #download_data.clear() # clear function so reload raw data
     st.session_state.product_data = download_data("products.csv")
     
     
@@ -211,7 +216,7 @@ if st.sidebar.button("Update Product Data") or UpdateProduct:
         
         #update_product_data(product_data,new_product_id,new_product_name)
         st.sidebar.success("Product data updated.")
-        download_data.clear() # clear function so reload raw data
+        #download_data.clear() # clear function so reload raw data
         st.session_state.product_data = download_data("products.csv")
         
 # Function to update price data
@@ -262,8 +267,8 @@ if st.sidebar.button("Show Product Data"):
 if st.sidebar.button("Show Price Data"):
     st.sidebar.dataframe(st.session_state.price_data)
 
-download_data.clear() # clear function so reload raw data
-st.session_state.transaction_data=download_data("transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
+#download_data.clear() # clear function so reload raw data
+st.session_state.transaction_data=download_data('transactions.csv')#?token=GHSAT0AAAAAACUX2XWM36QGCSK7KFGRMQKQZUQGBCA')#"transactions.csv?token=GHSAT0AAAAAACJ3ULJUSULGHYXPQDJGVUQUZKGM4YQ")
 if st.sidebar.button("Show Transaction Data"):
     st.sidebar.dataframe(st.session_state.transaction_data.sort_values(by='Date', ascending=False))
 st.sidebar.write('Most recent transaction',np.max(st.session_state.transaction_data['Date']))
