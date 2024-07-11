@@ -61,7 +61,7 @@ def upload_data(df,file_path):
 def load_price():
     price_data = download_data('price.csv?token=GHSAT0AAAAAACJ3ULJVDU4IL7Q6DBGQOJ7MZKGM3XQ')
     # Filter price data
-    date_format = "%d/%m/%Y"
+    date_format = "%d/%m/%Y %H:%M"#"%d/%m/%Y"
     price_data['Date'] = pd.to_datetime(price_data['Date'], format=date_format, errors='coerce')
     price_data = price_data.sort_values(by=['Product_ID', 'Date'], ascending=[True, False])
     
