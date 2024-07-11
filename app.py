@@ -38,10 +38,11 @@ def download_data(file):
       print(f"Error downloading file: {download.status_code}")
       return None  # Handle download error
 def upload_data(df,file_path):
+    #tried cmd setx GITHUB_PAT "PAT token"
+    #forced in local and system env variables now
     owner='laytonprend'
-    access_token='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'#'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' 
+    access_token= os.getenv('GITHUB_PAT')  #os.environ.get("GITHUB_PAT")
     branch_name = 'main'  # Replace with your desired branch name
-    #file_path = f'{filename}.csv'  # Replace with the path to the file in your repository
     repo='POS-Solution'
     repo_name=f'{owner}/{repo}'
     print(repo_name)
@@ -49,14 +50,18 @@ def upload_data(df,file_path):
     g = Github(access_token)
     repo = g.get_repo(repo_name)
     df_content = df.to_csv(index=False)
-    
-    existing_file = repo.get_contents(file_path, ref=branch_name)
-    existing_sha = existing_file.sha if existing_file else None
 
+    #print('midway success')
     # Create or update the file, including the existing SHA
     commit_message = f"Updating {file_path} data"
-    repo.update_file(file_path, commit_message, df_content, branch=branch_name, sha=existing_sha) # also create_file
-        
+    contents = repo.get_contents(file_path, ref=branch_name)  # Get file contents
+    #print(contents)
+    #st.title(access_token)
+    #repo.update_file(contents.path, "more tests", "more tests", contents.sha, branch="main")
+
+    repo.update_file(file_path, "Updated transaction data", df_content, contents.sha, branch=branch_name)
+
+    # {'commit': Commit(sha="b06e05400afd6baee13fff74e38553d135dca7dc"), 'content': ContentFile(path="test.txt")}
     
     #repo.create_file(file_path, "Creating file from URL", df_content, branch=branch_name)
     print(f'File at "{file_path}" CREATED in the repository')
