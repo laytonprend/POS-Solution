@@ -36,7 +36,7 @@ def download_data(file):
     return df.copy()
 def upload_data(df,file_path):
     owner='laytonprend'
-    access_token='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' 
+    access_token='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'#'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' 
     branch_name = 'main'  # Replace with your desired branch name
     #file_path = f'{filename}.csv'  # Replace with the path to the file in your repository
     repo='POS-Solution'
