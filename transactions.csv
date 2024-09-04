@@ -77,3 +77,4 @@ Transaction_ID,Date,Total_Price,Unit_Price,Quantity,Product_ID,Product_Name
 32,2024-08-30 13:20:11.700587,510,255.0,2,11,product 12
 33,2024-08-31 17:37:16.432343,1,1.0,1,1,product 1
 33,2024-08-31 17:37:16.432350,0,0.0,1,6,product 6
+34,2024-09-04 19:07:46.095163,1,1.0,1,1,product 1
